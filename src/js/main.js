@@ -23,6 +23,8 @@ const loadingOverlay = $("#app-loading-overlay");
 const sidebar = $("#sidebar");
 const sidebarOverlay = $("#sidebar-overlay");
 const navLinks = $$(".nav-link");
+const headerMenuBtn = $("#header-menu-btn");
+const sidebarCloseBtn = $("#sidebar-close-btn");
 
 const headerTitle = $("#header h1");
 const headerSubtitle = $("#header p");
@@ -1097,26 +1099,37 @@ function renderWeeklyOverview(allItems) {
 
 // 8. Event Listeners
 
+function setSidebarOpen(isOpen) {
+  sidebar?.classList.toggle("open", isOpen);
+  sidebarOverlay?.classList.toggle("active", isOpen);
+  headerMenuBtn?.setAttribute("aria-expanded", String(isOpen));
+  sidebar?.setAttribute("aria-hidden", String(!isOpen));
+}
+
 function addEventListeners() {
   navLinks.forEach((link, i) => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       const pageNames = ["meals", "products", "foodlog"];
       navigateTo(pageNames[i]);
+      setSidebarOpen(false);
     });
   });
 
-  $("#header-menu-btn")?.addEventListener("click", () => {
-    sidebar.classList.toggle("-translate-x-full");
-    sidebarOverlay.classList.toggle("active");
+  headerMenuBtn?.setAttribute("aria-expanded", "false");
+  headerMenuBtn?.setAttribute("aria-controls", "sidebar");
+  sidebar?.setAttribute("aria-hidden", "true");
+
+  headerMenuBtn?.addEventListener("click", () => {
+    setSidebarOpen(!sidebar?.classList.contains("open"));
   });
-  $("#sidebar-close-btn")?.addEventListener("click", () => {
-    sidebar.classList.add("-translate-x-full");
-    sidebarOverlay.classList.remove("active");
-  });
-  sidebarOverlay?.addEventListener("click", () => {
-    sidebar.classList.add("-translate-x-full");
-    sidebarOverlay.classList.remove("active");
+  sidebarCloseBtn?.addEventListener("click", () => setSidebarOpen(false));
+  sidebarOverlay?.addEventListener("click", () => setSidebarOpen(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar?.classList.contains("open")) {
+      setSidebarOpen(false);
+      headerMenuBtn?.focus();
+    }
   });
 
   let searchTimer;
